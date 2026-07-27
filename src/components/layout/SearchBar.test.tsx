@@ -33,4 +33,14 @@ describe("SearchBar", () => {
 
     expect(pushMock).toHaveBeenCalledWith("/search?s=a%26b");
   });
+
+  it("navigates to /search?s=<term> when Enter is pressed", async () => {
+    render(<SearchBar />);
+
+    const input = screen.getByRole("searchbox", { name: "Buscar productos" });
+    await userEvent.type(input, "phone{Enter}");
+
+    expect(pushMock).toHaveBeenCalledWith("/search?s=phone");
+    expect(pushMock).toHaveBeenCalledOnce();
+  });
 });
