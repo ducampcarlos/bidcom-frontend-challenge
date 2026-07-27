@@ -2,8 +2,15 @@ import { Container } from "@/components/ui/Container";
 import { ProductListing } from "@/components/product/ProductListing";
 import { listCategoriesUseCase, searchProductsUseCase } from "@/lib/container";
 
-export default async function HomePage() {
-  const { products } = await searchProductsUseCase.execute("", 20);
+interface SearchPageProps {
+  searchParams: Promise<{ s?: string }>;
+}
+
+export default async function SearchPage({ searchParams }: SearchPageProps) {
+  const { s } = await searchParams;
+  const query = s ?? "";
+
+  const { products } = await searchProductsUseCase.execute(query, 20);
   const categories = products.length === 0 ? await listCategoriesUseCase.execute(5) : [];
 
   return (
