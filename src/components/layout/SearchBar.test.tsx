@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { SearchBar } from "@/components/layout/SearchBar";
@@ -42,5 +42,15 @@ describe("SearchBar", () => {
 
     expect(pushMock).toHaveBeenCalledWith("/search?s=phone");
     expect(pushMock).toHaveBeenCalledOnce();
+  });
+
+  it("does not submit on the Enter that confirms an IME composition", async () => {
+    render(<SearchBar />);
+
+    const input = screen.getByRole("searchbox", { name: "Buscar productos" });
+    await userEvent.type(input, "日本語");
+    fireEvent.keyDown(input, { key: "Enter", isComposing: true });
+
+    expect(pushMock).not.toHaveBeenCalled();
   });
 });

@@ -19,7 +19,9 @@ export function SearchBar() {
   // to be flaky in manual testing (some keyboard/IME states never fired the
   // form's submit event). Submitting explicitly on Enter makes it deterministic.
   function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
-    if (event.key === "Enter") {
+    // isComposing guards IME input (e.g. typing Japanese/Chinese/Korean): the Enter
+    // that confirms a composition candidate must not also submit the form.
+    if (event.key === "Enter" && !event.nativeEvent.isComposing) {
       event.preventDefault();
       event.currentTarget.form?.requestSubmit();
     }

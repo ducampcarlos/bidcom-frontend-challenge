@@ -9,27 +9,48 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+const foundProduct = {
+  id: 1,
+  sku: "SKU-1",
+  title: "Found Product",
+  price: 12.5,
+  category: "misc",
+  thumbnail: "https://cdn.dummyjson.com/product-images/misc/thumbnail.webp",
+  description: "",
+};
+
+function mockDummyJsonFetch(searchTermMatches: boolean) {
+  global.fetch = vi.fn().mockImplementation((input: RequestInfo | URL) => {
+    const url = input.toString();
+    if (url.includes("/products/category/")) {
+      // Real DummyJSON behavior: an unknown/non-category term returns an empty
+      // list (200 OK), not an error — search() falls back to /products/search.
+      return Promise.resolve({
+        ok: true,
+        json: async () => ({ products: [], total: 0, skip: 0, limit: 20 }),
+      });
+    }
+    if (url.includes("/products/search")) {
+      return Promise.resolve({
+        ok: true,
+        json: async () => ({
+          products: searchTermMatches ? [foundProduct] : [],
+          total: searchTermMatches ? 1 : 0,
+          skip: 0,
+          limit: 20,
+        }),
+      });
+    }
+    return Promise.resolve({
+      ok: true,
+      json: async () => ["beauty", "fragrances", "furniture", "groceries", "home-decoration"],
+    });
+  }) as unknown as typeof fetch;
+}
+
 describe("SearchPage (integration)", () => {
   it("renders matching products for a query with results", async () => {
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        products: [
-          {
-            id: 1,
-            sku: "SKU-1",
-            title: "Found Product",
-            price: 12.5,
-            category: "misc",
-            thumbnail: "https://cdn.dummyjson.com/product-images/misc/thumbnail.webp",
-            description: "",
-          },
-        ],
-        total: 1,
-        skip: 0,
-        limit: 20,
-      }),
-    }) as unknown as typeof fetch;
+    mockDummyJsonFetch(true);
 
     const jsx = await SearchPage({ searchParams: Promise.resolve({ s: "found" }) });
     render(jsx);
@@ -38,19 +59,7 @@ describe("SearchPage (integration)", () => {
   });
 
   it("renders the empty state with categories when there are no matches", async () => {
-    global.fetch = vi.fn().mockImplementation((input: RequestInfo | URL) => {
-      const url = input.toString();
-      if (url.includes("/products/search")) {
-        return Promise.resolve({
-          ok: true,
-          json: async () => ({ products: [], total: 0, skip: 0, limit: 20 }),
-        });
-      }
-      return Promise.resolve({
-        ok: true,
-        json: async () => ["beauty", "fragrances", "furniture", "groceries", "home-decoration"],
-      });
-    }) as unknown as typeof fetch;
+    mockDummyJsonFetch(false);
 
     const jsx = await SearchPage({ searchParams: Promise.resolve({ s: "zzz" }) });
     render(jsx);
@@ -61,5 +70,14 @@ describe("SearchPage (integration)", () => {
       ),
     ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "beauty" })).toBeInTheDocument();
+  });
+
+  it("uses the first value when the s param is repeated in the URL", async () => {
+    mockDummyJsonFetch(true);
+
+    const jsx = await SearchPage({ searchParams: Promise.resolve({ s: ["found", "other"] }) });
+    render(jsx);
+
+    expect(await screen.findByText("Found Product")).toBeInTheDocument();
   });
 });
