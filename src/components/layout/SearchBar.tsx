@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent, type KeyboardEvent } from "react";
-import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 
 export function SearchBar() {
@@ -28,17 +27,31 @@ export function SearchBar() {
   }
 
   return (
-    <form onSubmit={handleSubmit} role="search" className="flex w-full max-w-md gap-2">
+    <form
+      onSubmit={handleSubmit}
+      role="search"
+      className="flex w-full max-w-md items-center gap-1 rounded-full bg-white py-1 pr-1 pl-4"
+    >
       <Input
         type="search"
         name="s"
         value={term}
         onChange={(event) => setTerm(event.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder="Buscar productos..."
+        placeholder="¿Qué estás buscando?"
         aria-label="Buscar productos"
+        className="border-none bg-transparent p-0 focus:ring-0"
       />
-      <Button type="submit">Buscar</Button>
+      <button
+        type="submit"
+        aria-label="Buscar"
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-brand transition-colors hover:bg-black/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"
+      >
+        <svg viewBox="0 0 20 20" fill="none" className="h-4.5 w-4.5" aria-hidden="true">
+          <circle cx="9" cy="9" r="6.5" stroke="currentColor" strokeWidth="1.8" />
+          <path d="M14 14L18 18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        </svg>
+      </button>
     </form>
   );
 }

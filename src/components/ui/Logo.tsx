@@ -1,3 +1,3 @@
 export function Logo() {
-  return <span className="text-xl font-bold tracking-tight text-blue-600">Bidcom</span>;
+  return <span className="text-2xl font-extrabold tracking-tight text-white">Bidcom</span>;
 }

@@ -96,7 +96,7 @@ remotos contra `next.config.ts` solo tiene sentido corriendo bajo el runtime rea
 ## Storybook
 
 Historias para los átomos del Design System y los componentes compuestos principales:
-`Button`, `Input`, `Price`, `Logo`, `ProductCard`, `Header`, `SearchBar`, `EmptyState`.
+`Button`, `Input`, `Badge`, `Price`, `Logo`, `ProductCard`, `Header`, `SearchBar`, `EmptyState`.
 
 ## Variables de entorno
 

@@ -4,6 +4,13 @@ import { Logo } from "./Logo";
 const meta = {
   title: "UI/Logo",
   component: Logo,
+  decorators: [
+    (Story) => (
+      <div className="bg-brand p-4">
+        <Story />
+      </div>
+    ),
+  ],
 } satisfies Meta<typeof Logo>;
 
 export default meta;

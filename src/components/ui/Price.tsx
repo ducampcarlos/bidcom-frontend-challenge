@@ -6,5 +6,5 @@ export interface PriceProps {
 }
 
 export function Price({ value, className = "" }: PriceProps) {
-  return <span className={`font-semibold ${className}`}>{formatPrice(value)}</span>;
+  return <span className={`font-bold tabular-nums ${className}`}>{formatPrice(value)}</span>;
 }

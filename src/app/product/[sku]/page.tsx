@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
+import { Badge } from "@/components/ui/Badge";
 import { Container } from "@/components/ui/Container";
 import { Price } from "@/components/ui/Price";
 import { getProductBySkuUseCase } from "@/lib/container";
@@ -17,8 +18,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
   }
 
   return (
-    <Container className="flex flex-1 flex-col gap-8 py-8 md:flex-row">
-      <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-white md:w-1/2">
+    <Container className="flex flex-1 flex-col gap-8 py-8 md:flex-row md:gap-12">
+      <div className="relative aspect-square w-full overflow-hidden rounded-lg border border-line bg-white md:w-1/2">
         <Image
           src={product.thumbnail}
           alt={product.title}
@@ -29,10 +30,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
         />
       </div>
       <div className="flex flex-1 flex-col gap-4">
-        <p className="text-sm uppercase tracking-wide text-black/50">{product.category}</p>
-        <h1 className="text-2xl font-semibold">{product.title}</h1>
-        <Price value={product.price} className="text-2xl" />
-        <p className="text-black/70">{product.description}</p>
+        <Badge className="w-fit capitalize">{product.category}</Badge>
+        <h1 className="text-3xl font-bold text-balance">{product.title}</h1>
+        <Price value={product.price} className="text-3xl" />
+        <p className="border-t border-line pt-4 leading-relaxed text-black/70">
+          {product.description}
+        </p>
       </div>
     </Container>
   );
