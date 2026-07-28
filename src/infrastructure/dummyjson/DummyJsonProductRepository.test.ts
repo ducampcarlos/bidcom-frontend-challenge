@@ -90,3 +90,15 @@ describe("DummyJsonProductRepository.findBySku", () => {
     expect(result?.title).toBe("Category Match");
   });
 });
+
+describe("DummyJsonProductRepository error handling", () => {
+  it("throws when DummyJSON responds with a non-ok status", async () => {
+    global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 503 }) as unknown as typeof fetch;
+
+    const repository = new DummyJsonProductRepository();
+
+    await expect(repository.listCategories()).rejects.toThrow(
+      "DummyJSON category-list request failed with status 503",
+    );
+  });
+});

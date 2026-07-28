@@ -27,6 +27,7 @@ Abrir [http://localhost:3000](http://localhost:3000).
 | `npm run start` | Sirve el build de producción |
 | `npm run lint` | ESLint |
 | `npm test` | Corre la suite de Vitest una vez |
+| `npm run test:coverage` | Corre la suite con reporte de cobertura |
 | `npm run test:watch` | Vitest en modo watch |
 | `npm run test:ui` | Vitest con UI interactiva |
 | `npm run storybook` | Storybook en modo desarrollo (puerto 6006) |
@@ -81,13 +82,21 @@ Server-side oriented: el fetching de datos ocurre en Server Components (`page.ts
 
 Vitest + React Testing Library, en `jsdom`. Cobertura:
 
-- **Unitarios**: mapeo DTO → entidad de dominio, `formatPrice`, los tres use-cases contra un
-  repositorio fake en memoria, átomos (`Button`, `Price`).
-- **Integración**: `ProductGrid` / `EmptyState` / `ProductListing` con datos mockeados,
-  `SearchBar` con `next/navigation` mockeado (verifica el `push` con la URL correctamente
-  encodeada), y un test que invoca la función `async` de `/search` directamente con `fetch`
-  global stubbeado — ejercita el wiring real (container → use-case → repositorio → mapper →
-  componentes) de punta a punta sin depender de la red.
+- **Unitarios**: mapeo DTO → entidad de dominio, `formatPrice`, los cuatro use-cases contra un
+  repositorio fake en memoria, átomos (`Logo`, `Price`), y el manejo de errores HTTP de
+  `DummyJsonProductRepository` (status no-ok → excepción).
+- **Integración**: `ProductGrid` / `EmptyState` / `ProductListing` / `Header` con datos
+  mockeados, `SearchBar` con `next/navigation` mockeado (verifica el `push` con la URL
+  correctamente encodeada, incluyendo el caso de Enter durante una composición IME), y las
+  tres páginas (`/`, `/search`, `/product/[sku]`) invocadas directamente como funciones
+  `async` con `fetch` global stubbeado — ejercitan el wiring real (container → use-case →
+  repositorio → mapper → componentes) de punta a punta sin depender de la red, incluyendo el
+  caso 404 (`notFound()`) y los distintos shapes de `searchParams.s` (string, array, ausente).
+
+`npm run test:coverage` corre la suite con reporte de cobertura (`@vitest/coverage-v8`):
+100% de statements/branches/functions/lines sobre el código de dominio, infraestructura,
+componentes y páginas (se excluyen `src/core/entities` —interfaces sin lógica— y
+`src/app/layout.tsx` —wiring de `<html>/<body>` de Next, sin nada real que asertar—).
 
 `next/image` se mockea en `src/test/setup.tsx` por un `<img>` plano: la validación de hosts
 remotos contra `next.config.ts` solo tiene sentido corriendo bajo el runtime real de Next
@@ -96,7 +105,7 @@ remotos contra `next.config.ts` solo tiene sentido corriendo bajo el runtime rea
 ## Storybook
 
 Historias para los átomos del Design System y los componentes compuestos principales:
-`Button`, `Input`, `Badge`, `Price`, `Logo`, `ProductCard`, `Header`, `SearchBar`, `EmptyState`.
+`Input`, `Badge`, `Price`, `Logo`, `ProductCard`, `Header`, `SearchBar`, `EmptyState`.
 
 ## Variables de entorno
 

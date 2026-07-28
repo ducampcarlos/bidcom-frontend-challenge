@@ -11,5 +11,25 @@ export default defineConfig({
     setupFiles: ["./src/test/setup.tsx"],
     globals: true,
     exclude: ["node_modules", ".next", "src/stories"],
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "html", "json-summary"],
+      include: ["src/**/*.{ts,tsx}"],
+      exclude: [
+        "src/**/*.stories.tsx",
+        "src/**/*.test.{ts,tsx}",
+        "src/test/**",
+        "src/core/entities/**",
+        // Root layout only mounts <html>/<body> + <Header/>; rendering that
+        // through Testing Library has no realistic assertion to make.
+        "src/app/layout.tsx",
+      ],
+      thresholds: {
+        statements: 100,
+        branches: 100,
+        functions: 100,
+        lines: 100,
+      },
+    },
   },
 });

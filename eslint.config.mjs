@@ -17,6 +17,8 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Storybook's static build output (generated, not source):
     "storybook-static/**",
+    // Vitest/Istanbul coverage report (generated, not source):
+    "coverage/**",
   ]),
   ...storybook.configs["flat/recommended"]
 ]);

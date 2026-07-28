@@ -80,4 +80,22 @@ describe("SearchPage (integration)", () => {
 
     expect(await screen.findByText("Found Product")).toBeInTheDocument();
   });
+
+  it("defaults to an empty query when the s param is missing entirely", async () => {
+    mockDummyJsonFetch(true);
+
+    const jsx = await SearchPage({ searchParams: Promise.resolve({}) });
+    render(jsx);
+
+    expect(await screen.findByText("Found Product")).toBeInTheDocument();
+  });
+
+  it("defaults to an empty query when s resolves to an empty array", async () => {
+    mockDummyJsonFetch(true);
+
+    const jsx = await SearchPage({ searchParams: Promise.resolve({ s: [] }) });
+    render(jsx);
+
+    expect(await screen.findByText("Found Product")).toBeInTheDocument();
+  });
 });
