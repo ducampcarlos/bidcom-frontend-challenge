@@ -22,7 +22,6 @@ describe("SearchPage (integration)", () => {
             price: 12.5,
             category: "misc",
             thumbnail: "https://cdn.dummyjson.com/product-images/misc/thumbnail.webp",
-            images: [],
             description: "",
           },
         ],

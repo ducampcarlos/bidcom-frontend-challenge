@@ -7,6 +7,7 @@ export interface ProductSearchResult {
 }
 
 export interface ProductRepository {
+  /** An empty query returns the default, unfiltered listing (used by the Home page). */
   search(query: string, limit: number): Promise<ProductSearchResult>;
   findBySku(sku: string): Promise<Product | null>;
   listCategories(limit?: number): Promise<Category[]>;

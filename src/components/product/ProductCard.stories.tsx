@@ -9,9 +9,7 @@ const sampleProduct: Product = {
   price: 9.99,
   category: "beauty",
   thumbnail: "https://cdn.dummyjson.com/product-images/beauty/essence-mascara-lash-princess/thumbnail.webp",
-  images: [],
   description: "Volumizing and lengthening effects, cruelty-free formula.",
-  brand: "Essence",
 };
 
 const meta = {

@@ -7,9 +7,7 @@ export interface DummyJsonProductDto {
   price: number;
   category: string;
   thumbnail: string;
-  images?: string[];
   description?: string;
-  brand?: string;
 }
 
 export function mapDtoToProduct(dto: DummyJsonProductDto): Product {
@@ -20,8 +18,6 @@ export function mapDtoToProduct(dto: DummyJsonProductDto): Product {
     price: dto.price,
     category: dto.category,
     thumbnail: dto.thumbnail,
-    images: dto.images ?? [],
     description: dto.description ?? "",
-    brand: dto.brand,
   };
 }

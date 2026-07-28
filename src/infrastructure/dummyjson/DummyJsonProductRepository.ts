@@ -11,16 +11,20 @@ interface DummyJsonSearchResponseDto {
   limit: number;
 }
 
-const PRODUCT_FIELDS = "id,sku,title,price,category,thumbnail,images,description,brand";
+const PRODUCT_FIELDS = "id,sku,title,price,category,thumbnail,description";
+
+async function fetchJson<T>(url: string, revalidateSeconds: number, errorLabel: string): Promise<T> {
+  const response = await fetch(url, { next: { revalidate: revalidateSeconds } });
+  if (!response.ok) {
+    throw new Error(`DummyJSON ${errorLabel} request failed with status ${response.status}`);
+  }
+  return response.json();
+}
 
 export class DummyJsonProductRepository implements ProductRepository {
   async search(query: string, limit: number): Promise<ProductSearchResult> {
     const url = `${API_BASE_URL}/products/search?q=${encodeURIComponent(query)}&limit=${limit}&select=${PRODUCT_FIELDS}`;
-    const response = await fetch(url, { next: { revalidate: 60 } });
-    if (!response.ok) {
-      throw new Error(`DummyJSON search request failed with status ${response.status}`);
-    }
-    const data: DummyJsonSearchResponseDto = await response.json();
+    const data = await fetchJson<DummyJsonSearchResponseDto>(url, 60, "search");
     return {
       products: data.products.map(mapDtoToProduct),
       total: data.total,
@@ -32,22 +36,14 @@ export class DummyJsonProductRepository implements ProductRepository {
     // The full catalog (~194 items) is fetched with a trimmed field selection and
     // filtered locally; cached longer since it's the same request for every product page.
     const url = `${API_BASE_URL}/products?limit=0&select=${PRODUCT_FIELDS}`;
-    const response = await fetch(url, { next: { revalidate: 3600 } });
-    if (!response.ok) {
-      throw new Error(`DummyJSON products request failed with status ${response.status}`);
-    }
-    const data: DummyJsonSearchResponseDto = await response.json();
+    const data = await fetchJson<DummyJsonSearchResponseDto>(url, 3600, "products");
     const match = data.products.find((product) => product.sku === sku);
     return match ? mapDtoToProduct(match) : null;
   }
 
   async listCategories(limit = 5): Promise<Category[]> {
     const url = `${API_BASE_URL}/products/category-list`;
-    const response = await fetch(url, { next: { revalidate: 3600 } });
-    if (!response.ok) {
-      throw new Error(`DummyJSON category-list request failed with status ${response.status}`);
-    }
-    const categories: string[] = await response.json();
+    const categories = await fetchJson<string[]>(url, 3600, "category-list");
     return categories.slice(0, limit);
   }
 }

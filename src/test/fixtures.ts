@@ -7,7 +7,5 @@ export const mockProduct: Product = {
   price: 19.99,
   category: "test-category",
   thumbnail: "https://cdn.dummyjson.com/product-images/test/thumbnail.webp",
-  images: ["https://cdn.dummyjson.com/product-images/test/1.webp"],
   description: "A product used for testing.",
-  brand: "TestBrand",
 };
