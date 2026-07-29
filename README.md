@@ -42,6 +42,26 @@ Abrir [http://localhost:3000](http://localhost:3000).
   el *routing* hacia esta ruta (no describe su contenido); se construyó con criterio propio
   (imagen, nombre, precio, descripción, categoría) para que la navegación quede completa.
 
+## V2
+
+Además de las páginas del challenge, `/v2` es una segunda experiencia, más ambiciosa y libre
+de la wireframe del PDF, pensada para mostrar qué tan reutilizable es la capa de dominio: usa
+los mismos `use-cases`/`ProductRepository`/`container.ts` que v1, solo con una UI y features
+distintas.
+
+- **`/v2`**: home editorial con una sección de mejores ofertas (carrusel, ordenado por
+  descuento) y el listado completo debajo.
+- **`/v2/search?s=termino`** y **`/v2/ofertas`**: mismo listado reutilizable, con filtro por
+  categoría, orden (precio/rating/relevancia) y paginación por "Cargar más".
+- **`/v2/product/[sku]`**: detalle con rating, marca y precio tachado cuando hay descuento.
+- Autocompletado en vivo en el buscador del header, vía `GET /api/v2/search` (el único Route
+  Handler del proyecto: es la puerta de entrada que le permite a componentes cliente de v2
+  llegar a `searchProductsUseCase` sin importar `container.ts` directamente).
+- Cada header (v1 y v2) tiene un link para pasar a la otra versión.
+
+v2 no tiene historias de Storybook: sus componentes (`src/components/v2/`) no forman parte de
+la superficie evaluada por el challenge, así que no se documentaron ahí.
+
 ## Arquitectura
 
 El código sigue una separación estilo Clean Architecture, pensada para que la fuente de datos
@@ -105,7 +125,8 @@ remotos contra `next.config.ts` solo tiene sentido corriendo bajo el runtime rea
 ## Storybook
 
 Historias para los átomos del Design System y los componentes compuestos principales:
-`Input`, `Badge`, `Price`, `Logo`, `ProductCard`, `Header`, `SearchBar`, `EmptyState`.
+`Input`, `Badge`, `Price`, `Logo`, `ProductCard`, `Header`, `SearchBar`, `EmptyState`. No hay
+historias para los componentes de `/v2` (ver sección [V2](#v2)).
 
 ## Variables de entorno
 
