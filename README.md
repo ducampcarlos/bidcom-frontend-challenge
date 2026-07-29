@@ -35,10 +35,10 @@ Abrir [http://localhost:3000](http://localhost:3000).
 
 ## Páginas
 
-- **`/`** — listado de productos (sin filtro, primeros 20 del catálogo).
-- **`/search?s=termino`** — listado filtrado por el término de búsqueda ingresado en el header.
+- **`/`**: listado de productos (sin filtro, primeros 20 del catálogo).
+- **`/search?s=termino`**: listado filtrado por el término de búsqueda ingresado en el header.
   Sin resultados, muestra un mensaje + 5 categorías sugeridas (linkean a esta misma ruta).
-- **`/product/[sku]`** — detalle de un producto por su `sku`. El PDF del challenge solo exige
+- **`/product/[sku]`**: detalle de un producto por su `sku`. El PDF del challenge solo exige
   el *routing* hacia esta ruta (no describe su contenido); se construyó con criterio propio
   (imagen, nombre, precio, descripción, categoría) para que la navegación quede completa.
 
@@ -49,7 +49,7 @@ El código sigue una separación estilo Clean Architecture, pensada para que la 
 
 ```
 src/
-├── app/               Rutas de Next.js (capa externa) — Server Components, sin lógica propia
+├── app/               Rutas de Next.js (capa externa), Server Components, sin lógica propia
 ├── components/        Design System: ui/ (átomos), product/, layout/, feedback/
 ├── core/               Dominio puro: entities, repositories (interfaces), use-cases
 ├── infrastructure/     Adaptadores que implementan los puertos de core/ (hoy: DummyJSON)
@@ -62,7 +62,7 @@ dependen de la interfaz `ProductRepository`, no de `fetch` ni de DummyJSON direc
 (Dependency Inversion). `lib/container.ts` es el único lugar donde se conecta la implementación
 real (`DummyJsonProductRepository`) con los use-cases; las páginas solo importan de ahí. Cambiar
 de fuente de datos el día de mañana implica escribir una nueva implementación del repositorio,
-sin tocar componentes ni use-cases — y permite testear los use-cases con un repositorio fake en
+sin tocar componentes ni use-cases, y permite testear los use-cases con un repositorio fake en
 memoria (`src/test/fakes/FakeProductRepository.ts`), sin red.
 
 Server-side oriented: el fetching de datos ocurre en Server Components (`page.tsx`, funciones
@@ -89,14 +89,14 @@ Vitest + React Testing Library, en `jsdom`. Cobertura:
   mockeados, `SearchBar` con `next/navigation` mockeado (verifica el `push` con la URL
   correctamente encodeada, incluyendo el caso de Enter durante una composición IME), y las
   tres páginas (`/`, `/search`, `/product/[sku]`) invocadas directamente como funciones
-  `async` con `fetch` global stubbeado — ejercitan el wiring real (container → use-case →
+  `async` con `fetch` global stubbeado: ejercitan el wiring real (container → use-case →
   repositorio → mapper → componentes) de punta a punta sin depender de la red, incluyendo el
   caso 404 (`notFound()`) y los distintos shapes de `searchParams.s` (string, array, ausente).
 
 `npm run test:coverage` corre la suite con reporte de cobertura (`@vitest/coverage-v8`):
 100% de statements/branches/functions/lines sobre el código de dominio, infraestructura,
-componentes y páginas (se excluyen `src/core/entities` —interfaces sin lógica— y
-`src/app/layout.tsx` —wiring de `<html>/<body>` de Next, sin nada real que asertar—).
+componentes y páginas (se excluyen `src/core/entities`, interfaces sin lógica, y
+`src/app/layout.tsx`, wiring de `<html>/<body>` de Next, sin nada real que asertar).
 
 `next/image` se mockea en `src/test/setup.tsx` por un `<img>` plano: la validación de hosts
 remotos contra `next.config.ts` solo tiene sentido corriendo bajo el runtime real de Next
