@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import HomePage from "@/app/page";
+import HomePage from "@/app/(shop)/page";
 
 const originalFetch = global.fetch;
 

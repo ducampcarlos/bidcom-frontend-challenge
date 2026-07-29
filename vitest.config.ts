@@ -20,9 +20,15 @@ export default defineConfig({
         "src/**/*.test.{ts,tsx}",
         "src/test/**",
         "src/core/entities/**",
-        // Root layout only mounts <html>/<body> + <Header/>; rendering that
-        // through Testing Library has no realistic assertion to make.
+        // Root layout only mounts <html>/<body>; rendering that through
+        // Testing Library has no realistic assertion to make.
         "src/app/layout.tsx",
+        // Pure structural wiring (<Header/> + <main>); Header's own behavior
+        // is covered by Header.test.tsx. Parens are glob metacharacters, so
+        // the route-group folder name needs bracket-escaping to match.
+        "src/app/[(]shop[)]/layout.tsx",
+        // Same rationale, for v2's own header wiring (HeaderV2.test.tsx covers it).
+        "src/app/v2/layout.tsx",
       ],
       thresholds: {
         statements: 100,

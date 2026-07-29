@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import SearchPage from "@/app/search/page";
+import SearchPage from "@/app/(shop)/search/page";
 
 const originalFetch = global.fetch;
 
@@ -24,7 +24,7 @@ function mockDummyJsonFetch(searchTermMatches: boolean) {
     const url = input.toString();
     if (url.includes("/products/category/")) {
       // Real DummyJSON behavior: an unknown/non-category term returns an empty
-      // list (200 OK), not an error — search() falls back to /products/search.
+      // list (200 OK), not an error; search() falls back to /products/search.
       return Promise.resolve({
         ok: true,
         json: async () => ({ products: [], total: 0, skip: 0, limit: 20 }),
