@@ -15,4 +15,10 @@ describe("Header", () => {
     expect(screen.getByText("Bidcom")).toBeInTheDocument();
     expect(screen.getByRole("searchbox", { name: "Buscar productos" })).toBeInTheDocument();
   });
+
+  it("links to the v2 experience", () => {
+    render(<Header />);
+
+    expect(screen.getByRole("link", { name: "Probar V2" })).toHaveAttribute("href", "/v2");
+  });
 });

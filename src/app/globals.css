@@ -9,6 +9,9 @@
   --color-brand-dark: #0000cc;
   --color-brand-soft: #eaeaff;
   --color-line: #e5e5e5;
+  /* v2: a barely-blue-tinted ground so white cards/panels have something to
+     sit on besides stark white (v1 keeps its own bg-zinc-50, untouched). */
+  --color-paper: #f4f6ff;
 }
 
 body {
