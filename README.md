@@ -4,6 +4,67 @@ Mini catálogo de productos construido con Next.js (App Router), TypeScript y Ta
 consumiendo la API pública de [DummyJSON](https://dummyjson.com/docs/products). Hecho como
 resolución de la Evaluación Técnica Frontend de Bidcom.
 
+El repositorio tiene dos experiencias:
+
+- **v1** (`/`, `/search`, `/product/[sku]`): resuelve la consigna del challenge tal cual está
+  descripta en el PDF.
+- **v2** (`/v2`, ver [sección V2](#v2)): una segunda experiencia más libre, pensada para mostrar
+  qué tan reutilizable es la capa de dominio, reusando los mismos `use-cases` y `repository`
+  que v1 detrás de una UI distinta.
+
+## Stack
+
+- [Next.js](https://nextjs.org) `16.2.11` (App Router, Server Components, Turbopack)
+- [React](https://react.dev) `19.2.4`
+- TypeScript `^5` (`strict: true`)
+- Tailwind CSS `^4` (config CSS-first en `src/app/globals.css`, sin `tailwind.config.js`)
+- [Vitest](https://vitest.dev) + React Testing Library + `jsdom`
+- [Storybook](https://storybook.js.org) `^10` (`@storybook/nextjs-vite`)
+
+## Cumplimiento de la consigna
+
+### Criterios técnicos excluyentes
+
+| Criterio | Cómo se cumple |
+|---|---|
+| TypeScript | Todo el código fuente es `.ts`/`.tsx`, con `strict: true` en `tsconfig.json`. |
+| Tests de integración y/o unitarios | Vitest + Testing Library, 100% de statements/branches/functions/lines. Ver [Testing](#testing). |
+| Última versión de Next.js | `16.2.11` (`package.json`). |
+| Última versión de Tailwind | `^4` (`package.json`). |
+| Responsive | Mobile first con los breakpoints de Tailwind (`sm:`, `lg:`); ver [Diseño](#diseño-y-design-system). |
+| Server-side oriented | Todas las páginas son Server Components `async`; el fetching de datos ocurre en el servidor. Los únicos Client Components son los que necesitan estado o interacción del navegador (`SearchBar` en v1; `SearchAutocomplete`, `ProductListingV2`, `FilterSortBar` y `OfertasCarousel` en v2). |
+| Buenas prácticas de componentización | Design System por capas (`ui/` átomos, `product/` / `layout/` / `feedback/` compuestos), con una responsabilidad por componente y props tipadas. |
+
+### Criterios técnicos deseados
+
+| Criterio | Cómo se cumple |
+|---|---|
+| Principios SOLID | Ver [Arquitectura](#arquitectura). |
+| Clean Architecture | Capas `core/` (dominio) → `infrastructure/` (adaptadores) → `app/` + `components/` (UI); las dependencias siempre apuntan hacia adentro. |
+| Design System | `src/components/ui/` (`Input`, `Badge`, `Price`, `Logo`, `Container`), documentado en Storybook. |
+| Storybook | 8 historias para v1, 7 para v2. Ver [Storybook](#storybook). |
+| Mobile first / container | `Container` centraliza el ancho máximo y el padding responsive; el resto de los componentes parte del layout mobile y agrega breakpoints hacia arriba. |
+
+### Card de producto
+
+| Criterio | Cómo se cumple |
+|---|---|
+| Imagen | `product.thumbnail`, provisto por DummyJSON. |
+| Nombre | `product.title`. |
+| Precio | `product.price`, formateado con `formatPrice` (`Intl.NumberFormat`). |
+
+### Listado de productos (`/`)
+
+| Criterio | Cómo se cumple |
+|---|---|
+| Header con logo → home | `Logo` dentro de un `Link` a `/`. |
+| Buscador → `/search?s=$termino` (Enter o botón) | `SearchBar`. |
+| Listado vía endpoint de búsqueda, límite 20 | `GetProductListingUseCase` → `SearchProductsUseCase` → `GET /products/search?q=&limit=20`. |
+| Cards a todo el ancho, enfiladas según responsive | `ProductGrid` (grid de Tailwind, 1/2/4 columnas por breakpoint). |
+| Click en producto → `/product/$sku` | `Link` dentro de cada `ProductCard`, usando el campo `sku` de la API. |
+| Mensaje de "sin resultados" | `EmptyState`, con el texto literal pedido en el PDF. |
+| 5 categorías sugeridas → `/search?s=$categoria` | `GET /products/category-list`, primeras 5. |
+
 ## Requisitos
 
 - Node.js 20+
@@ -70,23 +131,55 @@ El código sigue una separación estilo Clean Architecture, pensada para que la 
 ```
 src/
 ├── app/               Rutas de Next.js (capa externa), Server Components, sin lógica propia
-├── components/        Design System: ui/ (átomos), product/, layout/, feedback/
+├── components/        Design System: ui/ (átomos), product/, layout/, feedback/, v2/
 ├── core/               Dominio puro: entities, repositories (interfaces), use-cases
 ├── infrastructure/     Adaptadores que implementan los puertos de core/ (hoy: DummyJSON)
 ├── lib/                 config.ts, formatPrice.ts, container.ts (composition root)
 └── test/                setup de Vitest, fixtures y fakes para tests
 ```
 
-Los `use-cases` (`SearchProductsUseCase`, `GetProductBySkuUseCase`, `ListCategoriesUseCase`)
-dependen de la interfaz `ProductRepository`, no de `fetch` ni de DummyJSON directamente
-(Dependency Inversion). `lib/container.ts` es el único lugar donde se conecta la implementación
+Los `use-cases` (`SearchProductsUseCase`, `GetProductBySkuUseCase`, `ListCategoriesUseCase`,
+`GetProductListingUseCase`) dependen de la interfaz `ProductRepository`, no de `fetch` ni de
+DummyJSON directamente. `lib/container.ts` es el único lugar donde se conecta la implementación
 real (`DummyJsonProductRepository`) con los use-cases; las páginas solo importan de ahí. Cambiar
 de fuente de datos el día de mañana implica escribir una nueva implementación del repositorio,
 sin tocar componentes ni use-cases, y permite testear los use-cases con un repositorio fake en
 memoria (`src/test/fakes/FakeProductRepository.ts`), sin red.
 
 Server-side oriented: el fetching de datos ocurre en Server Components (`page.tsx`, funciones
-`async`). El único Client Component es `SearchBar` (necesita estado local y navegación).
+`async`). Los Client Components (`SearchBar` en v1; `SearchAutocomplete`, `FilterSortBar`,
+`ProductListingV2` y `OfertasCarousel` en v2) son los mínimos necesarios para tener estado local
+o navegación.
+
+### SOLID
+
+- **Single Responsibility**: cada use-case resuelve una sola operación (`SearchProductsUseCase`
+  busca, `GetProductBySkuUseCase` trae un producto, `ListCategoriesUseCase` lista categorías);
+  `GetProductListingUseCase` compone los dos primeros para la vista de listado.
+- **Open/Closed**: agregar un nuevo campo de orden (`ProductSort`) o un nuevo parámetro de
+  paginación se hizo extendiendo firmas con parámetros opcionales, sin modificar el
+  comportamiento existente de ningún llamador.
+- **Liskov Substitution**: `DummyJsonProductRepository` y `FakeProductRepository` implementan
+  la misma interfaz `ProductRepository` y son intercambiables; los tests usan la segunda sin
+  tocar los use-cases.
+- **Interface Segregation**: `ProductRepository` expone solo tres métodos (`search`,
+  `findBySku`, `listCategories`), lo mínimo que necesita cada use-case.
+- **Dependency Inversion**: los use-cases dependen de la interfaz `ProductRepository`, no de la
+  implementación concreta; `container.ts` es el único punto que conoce a
+  `DummyJsonProductRepository`.
+
+## Diseño y Design System
+
+- **Mobile first**: las clases de Tailwind parten del layout mobile (sin prefijo) y agregan
+  breakpoints hacia arriba (`sm:`, `lg:`) para pantallas más grandes, nunca al revés.
+- **Container**: `src/components/ui/Container.tsx` centraliza el ancho máximo (`max-w-7xl`) y
+  el padding horizontal responsive; todas las páginas y secciones lo reutilizan en vez de
+  repetir esos valores.
+- **Átomos** (`src/components/ui/`): `Input`, `Badge`, `Price`, `Logo`, `Container`, cada uno
+  con su historia de Storybook.
+- **Tokens de marca**: definidos en `src/app/globals.css` con `@theme` (Tailwind 4, sin
+  `tailwind.config.js`): `--color-brand`, `--color-brand-dark`, `--color-brand-soft`,
+  `--color-line`, `--color-paper`.
 
 ## Notas sobre la API de DummyJSON
 
@@ -97,30 +190,34 @@ Server-side oriented: el fetching de datos ocurre en Server Components (`page.ts
   lookup). `findBySku` trae el catálogo completo (`GET /products?limit=0&select=...`, ~194
   productos, con selección de campos para aligerar el payload) y filtra localmente. Se cachea
   con `revalidate` largo (1h) para no pagar ese costo en cada visita a `/product/[sku]`.
+- v2 agrega paginación (`skip`/`limit`) y orden (`sortBy`/`order`) sobre los mismos endpoints,
+  y usa además los campos `brand`, `rating` y `discountPercentage` que v1 no muestra.
 
 ## Testing
 
 Vitest + React Testing Library, en `jsdom`. Cobertura:
 
-- **Unitarios**: mapeo DTO → entidad de dominio, `formatPrice`, los cuatro use-cases contra un
+- **Unitarios**: mapeo DTO → entidad de dominio, `formatPrice`, los use-cases contra un
   repositorio fake en memoria, átomos (`Logo`, `Price`), y el manejo de errores HTTP de
   `DummyJsonProductRepository` (status no-ok → excepción).
 - **Integración**: `ProductGrid` / `EmptyState` / `ProductListing` / `Header` con datos
   mockeados, `SearchBar` con `next/navigation` mockeado (verifica el `push` con la URL
   correctamente encodeada, incluyendo el caso de Enter durante una composición IME), y las
-  tres páginas (`/`, `/search`, `/product/[sku]`) invocadas directamente como funciones
-  `async` con `fetch` global stubbeado: ejercitan el wiring real (container → use-case →
-  repositorio → mapper → componentes) de punta a punta sin depender de la red, incluyendo el
-  caso 404 (`notFound()`) y los distintos shapes de `searchParams.s` (string, array, ausente).
+  páginas (`/`, `/search`, `/product/[sku]`, y sus equivalentes de v2) invocadas directamente
+  como funciones `async` con `fetch` global stubbeado: ejercitan el wiring real (container →
+  use-case → repositorio → mapper → componentes) de punta a punta sin depender de la red,
+  incluyendo el caso 404 (`notFound()`) y los distintos shapes de `searchParams.s` (string,
+  array, ausente).
 
 `npm run test:coverage` corre la suite con reporte de cobertura (`@vitest/coverage-v8`):
 100% de statements/branches/functions/lines sobre el código de dominio, infraestructura,
-componentes y páginas (se excluyen `src/core/entities`, interfaces sin lógica, y
-`src/app/layout.tsx`, wiring de `<html>/<body>` de Next, sin nada real que asertar).
+componentes y páginas (se excluyen `src/core/entities`, interfaces sin lógica, y los
+`layout.tsx`, wiring de Next sin nada real que asertar).
 
 `next/image` se mockea en `src/test/setup.tsx` por un `<img>` plano: la validación de hosts
 remotos contra `next.config.ts` solo tiene sentido corriendo bajo el runtime real de Next
-(dev/build/start), no en `jsdom`.
+(dev/build/start), no en `jsdom`. También se agrega ahí un polyfill de `Element.scrollBy`,
+que `jsdom` no implementa y que necesita el carrusel de v2 para no fallar en los tests.
 
 ## Storybook
 
