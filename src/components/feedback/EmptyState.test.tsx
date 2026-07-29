@@ -13,4 +13,13 @@ describe("EmptyState", () => {
     const beautyLink = screen.getByRole("link", { name: "beauty" });
     expect(beautyLink).toHaveAttribute("href", "/search?s=beauty");
   });
+
+  it("points category links at a custom search base path when given one", () => {
+    render(<EmptyState categories={["beauty"]} searchBasePath="/v2/search" />);
+
+    expect(screen.getByRole("link", { name: "beauty" })).toHaveAttribute(
+      "href",
+      "/v2/search?s=beauty",
+    );
+  });
 });
