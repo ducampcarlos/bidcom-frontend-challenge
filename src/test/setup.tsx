@@ -1,6 +1,13 @@
 import "@testing-library/jest-dom/vitest";
 import { vi } from "vitest";
 
+// jsdom doesn't implement scrollable-area methods (unrelated to layout, which jsdom
+// never computes anyway). Stub it so components that scroll a ref (e.g. carousels)
+// don't crash under test.
+if (!Element.prototype.scrollBy) {
+  Element.prototype.scrollBy = () => {};
+}
+
 // next/image validates remote hosts against next.config's `images.remotePatterns`,
 // a check that only makes sense under the real Next.js runtime (dev/build/start).
 // In jsdom it has nothing to validate against, so tests render a plain <img> instead.
