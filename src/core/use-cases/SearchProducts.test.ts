@@ -22,4 +22,26 @@ describe("SearchProductsUseCase", () => {
 
     expect(result.products).toEqual([]);
   });
+
+  it("passes skip through to the repository for pagination", async () => {
+    const products = [mockProduct, { ...mockProduct, id: 2, sku: "TEST-SKU-002" }];
+    const repository = new FakeProductRepository(products);
+    const useCase = new SearchProductsUseCase(repository);
+
+    const result = await useCase.execute("", 1, 1);
+
+    expect(result.products).toEqual([products[1]]);
+    expect(result.total).toBe(2);
+  });
+
+  it("passes the sort option through to the repository", async () => {
+    const lowDiscount = { ...mockProduct, id: 1, sku: "TEST-SKU-001", discountPercentage: 5 };
+    const highDiscount = { ...mockProduct, id: 2, sku: "TEST-SKU-002", discountPercentage: 30 };
+    const repository = new FakeProductRepository([lowDiscount, highDiscount]);
+    const useCase = new SearchProductsUseCase(repository);
+
+    const result = await useCase.execute("", 20, 0, "discount-desc");
+
+    expect(result.products).toEqual([highDiscount, lowDiscount]);
+  });
 });

@@ -35,5 +35,26 @@ describe("mapDtoToProduct", () => {
     });
 
     expect(product.description).toBe("");
+    expect(product.brand).toBeUndefined();
+    expect(product.rating).toBeUndefined();
+    expect(product.discountPercentage).toBeUndefined();
+  });
+
+  it("passes through brand, rating and discountPercentage when present", () => {
+    const product = mapDtoToProduct({
+      id: 3,
+      sku: "SKU-3",
+      title: "Full DTO",
+      price: 20,
+      category: "beauty",
+      thumbnail: "https://cdn.dummyjson.com/thumb3.webp",
+      brand: "Essence",
+      rating: 4.5,
+      discountPercentage: 12.3,
+    });
+
+    expect(product.brand).toBe("Essence");
+    expect(product.rating).toBe(4.5);
+    expect(product.discountPercentage).toBe(12.3);
   });
 });

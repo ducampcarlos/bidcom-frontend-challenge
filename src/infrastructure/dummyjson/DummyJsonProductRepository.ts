@@ -1,6 +1,6 @@
 import type { Category } from "@/core/entities/Category";
 import type { Product } from "@/core/entities/Product";
-import type { ProductRepository, ProductSearchResult } from "@/core/repositories/ProductRepository";
+import type { ProductRepository, ProductSearchResult, ProductSort } from "@/core/repositories/ProductRepository";
 import { API_BASE_URL } from "@/lib/config";
 import { mapDtoToProduct, type DummyJsonProductDto } from "./mappers";
 
@@ -11,7 +11,11 @@ interface DummyJsonSearchResponseDto {
   limit: number;
 }
 
-const PRODUCT_FIELDS = "id,sku,title,price,category,thumbnail,description";
+const PRODUCT_FIELDS = "id,sku,title,price,category,thumbnail,description,brand,rating,discountPercentage";
+
+const SORT_QUERY: Record<ProductSort, string> = {
+  "discount-desc": "&sortBy=discountPercentage&order=desc",
+};
 
 async function fetchJson<T>(url: string, revalidateSeconds: number, errorLabel: string): Promise<T> {
   const response = await fetch(url, { next: { revalidate: revalidateSeconds } });
@@ -29,8 +33,9 @@ function toSearchResult(data: DummyJsonSearchResponseDto): ProductSearchResult {
 }
 
 export class DummyJsonProductRepository implements ProductRepository {
-  async search(query: string, limit: number): Promise<ProductSearchResult> {
+  async search(query: string, limit: number, skip = 0, sort?: ProductSort): Promise<ProductSearchResult> {
     const trimmed = query.trim();
+    const sortParam = sort ? SORT_QUERY[sort] : "";
 
     // The "recommended categories" links (EmptyState) point at /search?s=$categoria per the
     // spec, so a non-empty term might actually be a category slug rather than free text.
@@ -38,14 +43,14 @@ export class DummyJsonProductRepository implements ProductRepository {
     // category endpoint first; an unknown/non-category term returns an empty list (200, not an
     // error), and we fall back to the regular text search in that case.
     if (trimmed) {
-      const categoryUrl = `${API_BASE_URL}/products/category/${encodeURIComponent(trimmed)}?limit=${limit}&select=${PRODUCT_FIELDS}`;
+      const categoryUrl = `${API_BASE_URL}/products/category/${encodeURIComponent(trimmed)}?limit=${limit}&skip=${skip}&select=${PRODUCT_FIELDS}${sortParam}`;
       const categoryData = await fetchJson<DummyJsonSearchResponseDto>(categoryUrl, 60, "category");
       if (categoryData.products.length > 0) {
         return toSearchResult(categoryData);
       }
     }
 
-    const url = `${API_BASE_URL}/products/search?q=${encodeURIComponent(query)}&limit=${limit}&select=${PRODUCT_FIELDS}`;
+    const url = `${API_BASE_URL}/products/search?q=${encodeURIComponent(query)}&limit=${limit}&skip=${skip}&select=${PRODUCT_FIELDS}${sortParam}`;
     const data = await fetchJson<DummyJsonSearchResponseDto>(url, 60, "search");
     return toSearchResult(data);
   }

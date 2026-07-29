@@ -8,6 +8,9 @@ export interface DummyJsonProductDto {
   category: string;
   thumbnail: string;
   description?: string;
+  brand?: string;
+  rating?: number;
+  discountPercentage?: number;
 }
 
 export function mapDtoToProduct(dto: DummyJsonProductDto): Product {
@@ -19,5 +22,8 @@ export function mapDtoToProduct(dto: DummyJsonProductDto): Product {
     category: dto.category,
     thumbnail: dto.thumbnail,
     description: dto.description ?? "",
+    brand: dto.brand,
+    rating: dto.rating,
+    discountPercentage: dto.discountPercentage,
   };
 }

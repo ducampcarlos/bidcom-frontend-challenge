@@ -78,6 +78,50 @@ describe("DummyJsonProductRepository.search", () => {
 
     expect(calledUrls.some((url) => url.includes("/products/category/"))).toBe(false);
   });
+
+  it("forwards skip to the underlying request for pagination", async () => {
+    const calledUrls: string[] = [];
+    mockFetch((url) => {
+      calledUrls.push(url);
+      return { products: [textMatchProduct], total: 1 };
+    });
+
+    const repository = new DummyJsonProductRepository();
+    await repository.search("mascara", 20, 40);
+
+    expect(calledUrls.every((url) => url.includes("skip=40"))).toBe(true);
+  });
+
+  it("forwards a discount-desc sort to both the category and text-search requests", async () => {
+    const calledUrls: string[] = [];
+    mockFetch((url) => {
+      calledUrls.push(url);
+      return url.includes("/products/category/")
+        ? { products: [categoryProduct], total: 1 }
+        : { products: [textMatchProduct], total: 1 };
+    });
+
+    const repository = new DummyJsonProductRepository();
+    await repository.search("beauty", 20, 0, "discount-desc");
+    await repository.search("", 20, 0, "discount-desc");
+
+    expect(
+      calledUrls.every((url) => url.includes("sortBy=discountPercentage") && url.includes("order=desc")),
+    ).toBe(true);
+  });
+
+  it("omits the sort params entirely when no sort is requested", async () => {
+    const calledUrls: string[] = [];
+    mockFetch((url) => {
+      calledUrls.push(url);
+      return { products: [textMatchProduct], total: 1 };
+    });
+
+    const repository = new DummyJsonProductRepository();
+    await repository.search("", 20);
+
+    expect(calledUrls.every((url) => !url.includes("sortBy"))).toBe(true);
+  });
 });
 
 describe("DummyJsonProductRepository.findBySku", () => {

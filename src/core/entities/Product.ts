@@ -6,4 +6,7 @@ export interface Product {
   category: string;
   thumbnail: string;
   description: string;
+  brand?: string;
+  rating?: number;
+  discountPercentage?: number;
 }
