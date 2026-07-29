@@ -59,8 +59,8 @@ distintas.
   llegar a `searchProductsUseCase` sin importar `container.ts` directamente).
 - Cada header (v1 y v2) tiene un link para pasar a la otra versión.
 
-v2 no tiene historias de Storybook: sus componentes (`src/components/v2/`) no forman parte de
-la superficie evaluada por el challenge, así que no se documentaron ahí.
+Sus componentes (`src/components/v2/`) tienen historias de Storybook bajo el grupo `V2/`,
+igual que el Design System de v1.
 
 ## Arquitectura
 
@@ -125,8 +125,9 @@ remotos contra `next.config.ts` solo tiene sentido corriendo bajo el runtime rea
 ## Storybook
 
 Historias para los átomos del Design System y los componentes compuestos principales:
-`Input`, `Badge`, `Price`, `Logo`, `ProductCard`, `Header`, `SearchBar`, `EmptyState`. No hay
-historias para los componentes de `/v2` (ver sección [V2](#v2)).
+`Input`, `Badge`, `Price`, `Logo`, `ProductCard`, `Header`, `SearchBar`, `EmptyState`, y bajo
+el grupo `V2/` sus equivalentes de `/v2`: `ProductCardV2`, `ProductGridV2`, `HeaderV2`,
+`FilterSortBar`, `SearchAutocomplete`, `OfertasCarousel`, `OfertasSection`.
 
 ## Variables de entorno
 
